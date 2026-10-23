@@ -1,0 +1,25 @@
+tasks=10  attempts/task=8.0
+always-pass tasks=1
+never-pass tasks=3
+mixed tasks=6 (best-of-N can only help on mixed tasks)
+errored trials=0 (counted as failures)
+
+ACTUAL TOTAL SPEND (pool): $63.69
+
+── Arm Results ──
+  single-shot: success=0.410 [0.200, 0.600] cost/task=$0.73
+  random@N=2: success=0.408 [0.200, 0.600] cost/task=$1.59  selector captures -2% of gain
+  random@N=4: success=0.414 [0.200, 0.600] cost/task=$3.18  selector captures 2% of gain
+  random@N=8: success=0.413 [0.200, 0.600] cost/task=$6.37  selector captures 1% of gain
+  consensus@N=2: success=0.410 [0.200, 0.600] cost/task=$1.59  selector captures 0% of gain
+  consensus@N=4: success=0.468 [0.300, 0.600] cost/task=$3.18  selector captures 28% of gain
+  consensus@N=8: success=0.517 [0.400, 0.700] cost/task=$6.37  selector captures 42% of gain
+  judge@N=2: success=0.493 [0.300, 0.700] cost/task=$1.69  selector captures 72% of gain
+  judge@N=4: success=0.549 [0.400, 0.700] cost/task=$3.38  selector captures 67% of gain
+  judge@N=8: success=0.573 [0.400, 0.700] cost/task=$6.77  selector captures 64% of gain
+  oracle@N=2: success=0.525 [0.300, 0.700] cost/task=$1.59  oracle gain=+0.115
+  oracle@N=4: success=0.617 [0.500, 0.700] cost/task=$3.18  oracle gain=+0.207
+  oracle@N=8: success=0.665 [0.600, 0.700] cost/task=$6.37  oracle gain=+0.255
+  refine-k=1: success=0.541 [0.300, 0.800] cost/task=$1.03
+  refine-k=2: success=0.589 [0.300, 0.800] cost/task=$1.33
+  refine-k=3: success=0.617 [0.400, 0.900] cost/task=$1.63

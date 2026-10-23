@@ -1,0 +1,17 @@
+arm,kind,N,success,ci_lo,ci_hi,cost_per_task,total_cost,selector
+single-shot,single-shot,1,0.41,0.2,0.6,0.7271,7.27,none
+random@N=2,random,2,0.4078,0.2,0.6,1.5922,15.92,random
+random@N=4,random,4,0.414,0.2,0.6,3.1844,31.84,random
+random@N=8,random,8,0.4126,0.2,0.6,6.3688,63.69,random
+consensus@N=2,consensus,2,0.41,0.2,0.6,1.5922,15.92,consensus
+consensus@N=4,consensus,4,0.4676,0.3,0.6,3.1844,31.84,consensus
+consensus@N=8,consensus,8,0.5174,0.4,0.7,6.3688,63.69,consensus
+judge@N=2,judge,2,0.49319999999999997,0.3,0.7,1.6922,16.92,judge
+judge@N=4,judge,4,0.5492,0.4,0.7,3.3844,33.84,judge
+judge@N=8,judge,8,0.5728,0.4,0.7,6.7688,67.69,judge
+oracle@N=2,oracle,2,0.5252,0.3,0.7,1.5922,15.92,oracle
+oracle@N=4,oracle,4,0.6174000000000001,0.5,0.7,3.1844,31.84,oracle
+oracle@N=8,oracle,8,0.6649999999999999,0.6,0.7,6.3688,63.69,oracle
+refine-k=1,refine,1,0.5408,0.3,0.8,1.0271,10.27,refine-1
+refine-k=2,refine,1,0.5893999999999999,0.3,0.8,1.3271,13.27,refine-2
+refine-k=3,refine,1,0.6166,0.4,0.9,1.6271,16.27,refine-3

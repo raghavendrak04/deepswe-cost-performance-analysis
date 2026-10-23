@@ -1,0 +1,58 @@
+{
+  "task_id": "task-08",
+  "task_title": "Fix memory leak in websocket message streaming buffer",
+  "strategy": "LLM Judge@N (N=4)",
+  "session_id": "traj-20261023-task08-judge4",
+  "judge_model": "claude-3-7-sonnet",
+  "metrics": {
+    "candidate_generation_cost": 0.318,
+    "judge_evaluation_cost": 0.042,
+    "total_cost_usd": 0.360,
+    "latency_seconds": 12.10,
+    "model_calls": 5
+  },
+  "rubric_weights": {
+    "correctness": 0.50,
+    "blast_radius_minimalism": 0.30,
+    "style_and_safety": 0.20
+  },
+  "candidate_scores": [
+    {
+      "candidate_id": "patch_1",
+      "scores": {"correctness": 8, "blast_radius": 6, "style": 7},
+      "weighted_total": 7.20,
+      "judge_notes": "Replaces entire buffer class with deque; high blast radius."
+    },
+    {
+      "candidate_id": "patch_2",
+      "scores": {"correctness": 9, "blast_radius": 9, "style": 9},
+      "weighted_total": 9.00,
+      "judge_notes": "Surgically calls `.clear()` on internal bytearray when socket closed. Minimal surface area."
+    },
+    {
+      "candidate_id": "patch_3",
+      "scores": {"correctness": 4, "blast_radius": 8, "style": 6},
+      "weighted_total": 5.60,
+      "judge_notes": "Adds GC collect call; ineffective for unreferenced socket cycles."
+    },
+    {
+      "candidate_id": "patch_4",
+      "scores": {"correctness": 7, "blast_radius": 7, "style": 8},
+      "weighted_total": 7.20,
+      "judge_notes": "Closes buffer only in exception handler, misses clean shutdown path."
+    }
+  ],
+  "decision_points": [
+    {
+      "decision_id": "D1",
+      "description": "Selected `patch_2` due to maximum score on correctness and minimal blast radius (2 lines changed)."
+    }
+  ],
+  "selected_candidate": "patch_2",
+  "final_patch": "--- a/ws/buffer.py\n+++ b/ws/buffer.py\n@@ -56,2 +56,4 @@\n     def on_disconnect(self):\n+        self._stream_buffer.clear()\n         self._active = False\n",
+  "verification": {
+    "status": "PASSED",
+    "exit_code": 0,
+    "stdout": "tests/test_stream.py::test_disconnect_memory_reclaim PASSED [100%]"
+  }
+}

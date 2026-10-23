@@ -1,0 +1,50 @@
+{
+  "task_id": "task-05",
+  "task_title": "Fix thread deadlock in connection pool health-check callback",
+  "strategy": "Consensus@N (N=8)",
+  "session_id": "traj-20261023-task05-consensus8",
+  "pool_size": 8,
+  "metrics": {
+    "total_prompt_tokens": 33600,
+    "total_completion_tokens": 5120,
+    "total_cost_usd": 0.6372,
+    "latency_seconds": 9.40,
+    "model_calls": 8
+  },
+  "candidate_generation": [
+    {"candidate_id": "c1", "strategy_flavor": "release lock before callback", "tokens_changed": 14, "cost": 0.079},
+    {"candidate_id": "c2", "strategy_flavor": "reentrant RLock", "tokens_changed": 4, "cost": 0.081},
+    {"candidate_id": "c3", "strategy_flavor": "release lock before callback", "tokens_changed": 15, "cost": 0.080},
+    {"candidate_id": "c4", "strategy_flavor": "release lock before callback", "tokens_changed": 14, "cost": 0.078},
+    {"candidate_id": "c5", "strategy_flavor": "async queue dispatch", "tokens_changed": 62, "cost": 0.084},
+    {"candidate_id": "c6", "strategy_flavor": "release lock before callback", "tokens_changed": 14, "cost": 0.079},
+    {"candidate_id": "c7", "strategy_flavor": "reentrant RLock", "tokens_changed": 4, "cost": 0.078},
+    {"candidate_id": "c8", "strategy_flavor": "release lock before callback", "tokens_changed": 16, "cost": 0.080}
+  ],
+  "consensus_computation": {
+    "distance_metric": "pairwise_jaccard_distance",
+    "cluster_distribution": {
+      "cluster_release_lock": ["c1", "c3", "c4", "c6", "c8"],
+      "cluster_rlock": ["c2", "c7"],
+      "cluster_async_queue": ["c5"]
+    },
+    "medoid_candidate_id": "c4",
+    "medoid_average_distance": 0.125
+  },
+  "decision_points": [
+    {
+      "decision_id": "D1",
+      "description": "5 of 8 candidates converged on releasing the mutex before invoking client-supplied callbacks, isolating user code from engine synchronization locks."
+    },
+    {
+      "decision_id": "D2",
+      "description": "Selected candidate `c4` as the medoid with minimal average distance to other solutions within the dominant cluster."
+    }
+  ],
+  "final_patch": "--- a/pool/manager.py\n+++ b/pool/manager.py\n@@ -112,6 +112,7 @@\n     with self._lock:\n         conn = self._get_ready_conn()\n+    # Execute health check outside synchronization lock to prevent reentrant deadlocks\n     if conn and self._health_check_fn:\n         self._health_check_fn(conn)\n",
+  "verification": {
+    "status": "PASSED",
+    "exit_code": 0,
+    "stdout": "tests/test_concurrency.py::test_callback_no_deadlock PASSED [100%]"
+  }
+}

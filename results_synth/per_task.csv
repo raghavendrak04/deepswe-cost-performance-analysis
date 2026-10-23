@@ -1,0 +1,11 @@
+task,n_attempts,pass_rate,oracle_pass,mean_cost,total_cost,mean_latency,mean_calls
+abs-module-cache-flags,8,1.0,1,0.8382,6.7055,46.675,7.25
+abs-stepped-slices,8,0.875,1,0.7342,5.8732,50.95,7.75
+actionlint-action-pinning-lint,8,0.5,1,0.8414,6.7311,63.8875,8.0
+adaptix-name-mapping-aliases,8,0.375,1,0.8756,7.0047,75.6,8.875
+aiomonitor-task-snapshots-diff,8,0.625,1,0.7162,5.7293,84.025,7.5
+anko-default-function-arguments,8,0.625,1,0.8843,7.0744,78.525,8.375
+anko-typed-variable-bindings,8,0.0,0,0.82,6.5602,90.0625,8.125
+arcane-drift-detection-baselines,8,0.125,1,0.7056,5.6446,94.1,8.875
+arktype-json-schema-refs-dependencies,8,0.0,0,0.7557,6.0456,96.475,7.5
+awilix-async-container-initialization,8,0.0,0,0.7899,6.3193,96.9125,7.875

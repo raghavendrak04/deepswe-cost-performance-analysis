@@ -1,0 +1,39 @@
+# Environment
+.env
+*.env
+.env.*
+
+# API keys
+**/api_key*
+**/credentials*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Pier artifacts (large)
+pier-jobs/
+*.whl
+
+# Internal Living Docs (Not for Git Push)
+PROJECT_MEMORY.md
+Inference-time compute take-home_ plan.md
+
+
+# Scratch & Logs
+scratch/
+.pytest_cache/
+

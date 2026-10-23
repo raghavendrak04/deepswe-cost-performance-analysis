@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inference-Time Compute · Research Assignment Dashboard</title>
+  <meta name="description" content="Interactive dashboard for the AI Research Engineer take-home assignment on inference-time compute for coding agents.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════ DESIGN TOKENS ═══════════════ */
+    :root {
+      --bg-0: #0a0c10;
+      --bg-1: #111318;
+      --bg-2: #181b22;
+      --bg-3: #1f2330;
+      --bg-card: #14161d;
+      --border: #262a36;
+      --border-glow: #2e3347;
+      --text-0: #e6eaf0;
+      --text-1: #b0b8c8;
+      --text-2: #6e7a90;
+      --accent-primary: #6c8cff;
+      --accent-secondary: #a78bfa;
+      --accent-success: #34d399;
+      --accent-warn: #fbbf24;
+      --accent-danger: #f87171;
+      --accent-cyan: #22d3ee;
+      --accent-orange: #fb923c;
+      --gradient-hero: linear-gradient(135deg, #6c8cff 0%, #a78bfa 50%, #22d3ee 100%);
+      --gradient-card: linear-gradient(135deg, rgba(108,140,255,.06) 0%, rgba(167,139,250,.04) 100%);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.5);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,.6);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-xs: 6px;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Inter', system-ui, sans-serif;
+    }
+
+    /* ═══════════════ RESET & BASE ═══════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 15px; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg-0);
+      color: var(--text-0);
+      line-height: 1.65;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    ::selection { background: rgba(108,140,255,.3); }
+
+    /* ═══════════════ SCROLLBAR ═══════════════ */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-1); }
+    ::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 3px; }
+
+    /* ═══════════════ LAYOUT ═══════════════ */
+    .container { max-width: 1260px; margin: 0 auto; padding: 0 24px; }
+
+    /* ═══════════════ NAV ═══════════════ */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,12,16,.85);
+      backdrop-filter: blur(16px) saturate(1.4);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      display: flex; align-items: center; gap: 20px;
+      padding: 12px 24px; max-width: 1260px; margin: 0 auto;
+      overflow-x: auto; white-space: nowrap;
+    }
+    .nav-brand {
+      font-weight: 700; font-size: 1rem;
+      background: var(--gradient-hero); -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; flex-shrink: 0;
+    }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-links a {
+      color: var(--text-2); text-decoration: none; font-size: .82rem;
+      font-weight: 500; padding: 6px 12px; border-radius: var(--radius-xs);
+      transition: all .2s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--text-0); background: var(--bg-3);
+    }
+
+    /* ═══════════════ HERO ═══════════════ */
+    .hero {
+      padding: 56px 0 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: -60% -20%; z-index: 0;
+      background: radial-gradient(ellipse at 50% 30%, rgba(108,140,255,.08) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 70%, rgba(167,139,250,.06) 0%, transparent 50%);
+      animation: heroPulse 8s ease-in-out infinite alternate;
+    }
+    @keyframes heroPulse {
+      0% { opacity: .6; transform: scale(1); }
+      100% { opacity: 1; transform: scale(1.05); }
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: 999px;
+      background: rgba(108,140,255,.12); border: 1px solid rgba(108,140,255,.25);
+      font-size: .75rem; font-weight: 600; color: var(--accent-primary);
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px;
+    }
+    .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-success); animation: blink 2s infinite; }
+    @keyframes blink { 50% { opacity: .3; } }
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800;
+      background: var(--gradient-hero); -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; margin-bottom: 12px; line-height: 1.15;
+    }
+    .hero p { color: var(--text-1); max-width: 640px; margin: 0 auto; font-size: .95rem; }
+
+    /* ═══════════════ SECTION ═══════════════ */
+    section { padding: 48px 0; }
+    .section-label {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 24px;
+    }
+    .section-label .icon {
+      width: 32px; height: 32px; border-radius: var(--radius-xs);
+      display: grid; place-items: center; font-size: 1rem;
+      background: var(--gradient-card); border: 1px solid var(--border);
+    }
+    .section-label h2 {
+      font-size: 1.3rem; font-weight: 700; color: var(--text-0);
+    }
+
+    /* ═══════════════ CARDS ═══════════════ */
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color .25s, box-shadow .25s;
+    }
+    .card:hover { border-color: var(--border-glow); box-shadow: var(--shadow-md); }
+    .card-title {
+      font-size: .95rem; font-weight: 700; color: var(--text-0);
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .card-title .tag {
+      font-size: .65rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .05em; padding: 2px 8px; border-radius: 999px;
+    }
+    .tag-blue   { background: rgba(108,140,255,.15); color: var(--accent-primary); }
+    .tag-purple { background: rgba(167,139,250,.15); color: var(--accent-secondary); }
+    .tag-green  { background: rgba(52,211,153,.15); color: var(--accent-success); }
+    .tag-yellow { background: rgba(251,191,36,.15); color: var(--accent-warn); }
+    .tag-red    { background: rgba(248,113,113,.15); color: var(--accent-danger); }
+    .tag-cyan   { background: rgba(34,211,238,.15); color: var(--accent-cyan); }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .grid-5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+
+    /* ═══════════════ KPI ROW ═══════════════ */
+    .kpi-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; }
+    .kpi {
+      flex: 1 1 160px; padding: 18px 20px; border-radius: var(--radius);
+      background: var(--bg-card); border: 1px solid var(--border);
+      text-align: center;
+    }
+    .kpi-value { font-size: 1.6rem; font-weight: 800; margin-bottom: 2px; }
+    .kpi-label { font-size: .72rem; font-weight: 500; color: var(--text-2); text-transform: uppercase; letter-spacing: .06em; }
+
+    /* ═══════════════ DIAGRAM (SVG) ═══════════════ */
+    .diagram-wrap {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 32px 24px; overflow-x: auto;
+      margin-bottom: 16px;
+    }
+    .diagram-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+    /* ═══════════════ TIMELINE ═══════════════ */
+    .timeline { position: relative; padding-left: 28px; }
+    .timeline::before {
+      content: ''; position: absolute; left: 8px; top: 0; bottom: 0;
+      width: 2px; background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary), var(--accent-cyan));
+      border-radius: 1px;
+    }
+    .tl-item { position: relative; margin-bottom: 24px; }
+    .tl-item::before {
+      content: ''; position: absolute; left: -24px; top: 6px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--bg-0); border: 2px solid var(--accent-primary);
+    }
+    .tl-item:nth-child(2)::before { border-color: var(--accent-secondary); }
+    .tl-item:nth-child(3)::before { border-color: var(--accent-cyan); }
+    .tl-item:nth-child(4)::before { border-color: var(--accent-success); }
+    .tl-item:nth-child(5)::before { border-color: var(--accent-warn); }
+    .tl-time { font-family: var(--mono); font-size: .75rem; color: var(--accent-primary); font-weight: 600; }
+    .tl-title { font-weight: 700; font-size: .9rem; margin: 2px 0 4px; }
+    .tl-desc  { font-size: .82rem; color: var(--text-1); }
+
+    /* ═══════════════ TABLE ═══════════════ */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    thead { background: var(--bg-3); }
+    th { text-align: left; padding: 10px 14px; font-weight: 600; color: var(--text-1); font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text-0); }
+    tr:hover td { background: rgba(108,140,255,.03); }
+    .mono { font-family: var(--mono); font-size: .78rem; }
+
+    /* ═══════════════ TREE ═══════════════ */
+    .tree { font-family: var(--mono); font-size: .8rem; line-height: 1.9; color: var(--text-1); padding: 16px 20px; background: var(--bg-2); border-radius: var(--radius-sm); border: 1px solid var(--border); }
+    .tree .dir  { color: var(--accent-primary); font-weight: 600; }
+    .tree .file { color: var(--text-0); }
+    .tree .comment { color: var(--text-2); font-style: italic; }
+
+    /* ═══════════════ CHECKLIST ═══════════════ */
+    .checklist { list-style: none; }
+    .checklist li {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 0; font-size: .88rem; color: var(--text-1);
+    }
+    .check-box {
+      width: 20px; height: 20px; flex-shrink: 0;
+      border: 2px solid var(--border-glow); border-radius: 5px;
+      cursor: pointer; display: grid; place-items: center;
+      transition: all .2s; margin-top: 1px;
+    }
+    .check-box.checked { background: var(--accent-success); border-color: var(--accent-success); }
+    .check-box.checked::after { content: '✓'; color: var(--bg-0); font-size: .7rem; font-weight: 700; }
+    .checklist li.done { color: var(--text-2); text-decoration: line-through; }
+
+    /* ═══════════════ CODE BLOCK ═══════════════ */
+    .code-block {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px 20px;
+      font-family: var(--mono); font-size: .78rem; color: var(--accent-cyan);
+      overflow-x: auto; line-height: 1.7; white-space: pre;
+    }
+
+    /* ═══════════════ DOUBT ACCORDION ═══════════════ */
+    .doubt { border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; overflow: hidden; }
+    .doubt summary {
+      padding: 14px 18px; cursor: pointer; font-weight: 600; font-size: .88rem;
+      background: var(--bg-2); color: var(--text-0); list-style: none;
+      display: flex; align-items: center; gap: 10px;
+      transition: background .2s;
+    }
+    .doubt summary:hover { background: var(--bg-3); }
+    .doubt summary::before { content: '▸'; color: var(--accent-primary); transition: transform .2s; }
+    .doubt[open] summary::before { transform: rotate(90deg); }
+    .doubt .answer { padding: 14px 18px; font-size: .85rem; color: var(--text-1); background: var(--bg-card); line-height: 1.7; }
+
+    /* ═══════════════ STAT PILL ═══════════════ */
+    .pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 999px; font-size: .72rem; font-weight: 600;
+    }
+
+    /* ═══════════════ FOOTER ═══════════════ */
+    footer { padding: 32px 0; border-top: 1px solid var(--border); text-align: center; color: var(--text-2); font-size: .75rem; }
+
+    /* ═══════════════ RESPONSIVE ═══════════════ */
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 1.6rem; }
+      .kpi-row { gap: 8px; }
+      .card { padding: 18px; }
+      section { padding: 32px 0; }
+    }
+
+    /* ═══════════════ ANIMATE IN ═══════════════ */
+    .fade-in { opacity: 0; transform: translateY(18px); transition: opacity .5s, transform .5s; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ──────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <span class="nav-brand">⚡ ITC Dashboard</span>
+    <div class="nav-links">
+      <a href="#summary" class="active">Summary</a>
+      <a href="#problem">Problem</a>
+      <a href="#plan">Plan</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#arms">Arms</a>
+      <a href="#antigravity">Workflow</a>
+      <a href="#doubts">Doubts</a>
+      <a href="#repo">Repo</a>
+      <a href="#submit">Submit</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── HERO ──────────────────────────── -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-badge"><span class="dot"></span> Research Assignment</div>
+    <h1>Inference-Time Compute<br>for Coding Agents</h1>
+    <p>Can spending more inference compute—best-of-N sampling, selection, refinement—raise pass rate without training? A 2.5-hour experiment on 10 DeepSWE tasks under $100.</p>
+  </div>
+</header>
+
+<main class="container">
+
+<!-- ═══════ §1  SUMMARY ═══════ -->
+<section id="summary" class="fade-in">
+  <div class="section-label">
+    <div class="icon">📋</div>
+    <h2>Assignment At a Glance</h2>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-value" style="color:var(--accent-primary)">10</div>
+      <div class="kpi-label">DeepSWE Tasks</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value" style="color:var(--accent-success)">$100</div>
+      <div class="kpi-label">API Budget Cap</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value" style="color:var(--accent-secondary)">2.5h</div>
+      <div class="kpi-label">Time Budget</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value" style="color:var(--accent-warn)">5</div>
+      <div class="kpi-label">Deliverables</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value" style="color:var(--accent-cyan)">3</div>
+      <div class="kpi-label">Memo Pages Max</div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">🎯 Core Question</div>
+      <p style="font-size:.85rem;color:var(--text-1)">Does spending more inference compute (best-of-N, refinement) raise pass rate on coding tasks <em>without training</em>?</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🔬 Hypothesis <span class="tag tag-purple">Draft</span></div>
+      <p style="font-size:.85rem;color:var(--text-1)">Under a fixed budget, <strong>sampling several cheap attempts + execution-based selection</strong> beats one expensive attempt and beats iterative self-refinement without ground truth.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Key Deliverable</div>
+      <p style="font-size:.85rem;color:var(--text-1)"><strong>Cost–Performance Pareto curves</strong> comparing strategies across inference budgets, with bootstrap error bars and per-task outcomes.</p>
+    </div>
+  </div>
+
+  <!-- Grading Breakdown -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-title">🏆 Evaluation Weights</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+      <span class="pill tag-blue">Research Taste 25%</span>
+      <span class="pill tag-purple">Experimental Rigor 25%</span>
+      <span class="pill tag-cyan">Technical Execution 20%</span>
+      <span class="pill tag-yellow">Trade-off Analysis 20%</span>
+      <span class="pill tag-green">Intellectual Honesty 10%</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ §2  PROBLEM ═══════ -->
+<section id="problem" class="fade-in">
+  <div class="section-label">
+    <div class="icon">🧠</div>
+    <h2>Sharpened Problem Statement</h2>
+  </div>
+  <div class="card" style="border-left:3px solid var(--accent-primary)">
+    <p style="font-size:1.05rem;font-weight:600;color:var(--text-0);line-height:1.6">
+      Given a fixed dollar budget <span class="mono" style="color:var(--accent-warn)">B</span> and a verifier that <em>cannot</em> see the hidden tests, how should a coding agent split spend between <span style="color:var(--accent-primary)">independent samples</span>, <span style="color:var(--accent-secondary)">verification</span>, and <span style="color:var(--accent-cyan)">refinement</span> to maximise the chance its final patch passes the hidden tests?
+    </p>
+    <p style="font-size:.82rem;color:var(--text-2);margin-top:12px">
+      <strong>Prediction:</strong> Gain is bounded by oracle pass@N and by selector accuracy, so the best strategy depends on sample diversity and selector reliability.
+    </p>
+  </div>
+
+  <!-- Solution Architecture Diagram -->
+  <div class="diagram-wrap" style="margin-top:16px">
+    <svg viewBox="0 0 940 200" xmlns="http://www.w3.org/2000/svg" style="max-width:900px">
+      <!-- Nodes -->
+      <g>
+        <!-- Budget -->
+        <rect x="10" y="70" width="120" height="56" rx="10" fill="#1f2330" stroke="#6c8cff" stroke-width="1.5"/>
+        <text x="70" y="95" text-anchor="middle" fill="#6c8cff" font-family="Inter,sans-serif" font-size="11" font-weight="700">Budget $B</text>
+        <text x="70" y="113" text-anchor="middle" fill="#b0b8c8" font-family="Inter,sans-serif" font-size="9">≤ $100 API</text>
+        <!-- Split -->
+        <rect x="175" y="70" width="100" height="56" rx="10" fill="#1f2330" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="225" y="95" text-anchor="middle" fill="#a78bfa" font-family="Inter,sans-serif" font-size="11" font-weight="700">Split</text>
+        <text x="225" y="113" text-anchor="middle" fill="#b0b8c8" font-family="Inter,sans-serif" font-size="9">allocation</text>
+        <!-- Samples -->
+        <rect x="320" y="10" width="130" height="48" rx="10" fill="#1f2330" stroke="#6c8cff" stroke-width="1.5"/>
+        <text x="385" y="33" text-anchor="middle" fill="#6c8cff" font-family="Inter,sans-serif" font-size="11" font-weight="600">N Samples</text>
+        <text x="385" y="47" text-anchor="middle" fill="#b0b8c8" font-family="Inter,sans-serif" font-size="9">independent</text>
+        <!-- Verify -->
+        <rect x="320" y="75" width="130" height="48" rx="10" fill="#1f2330" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="385" y="98" text-anchor="middle" fill="#a78bfa" font-family="Inter,sans-serif" font-size="11" font-weight="600">Verification</text>
+        <text x="385" y="112" text-anchor="middle" fill="#b0b8c8" font-family="Inter,sans-serif" font-size="9">agent tests / judge</text>
+        <!-- Refine -->
+        <rect x="320" y="140" width="130" height="48" rx="10" fill="#1f2330" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="385" y="163" text-anchor="middle" fill="#22d3ee" font-family="Inter,sans-serif" font-size="11" font-weight="600">Refinement</text>
+        <text x="385" y="177" text-anchor="middle" fill="#b0b8c8" font-family="Inter,sans-serif" font-size="9">k feedback rounds</text>
+        <!-- Selector -->
+        <rect x="500" y="55" width="120" height="56" rx="10" fill="#1f2330" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="560" y="80" text-anchor="middle" fill="#fbbf24" font-family="Inter,sans-serif" font-size="11" font-weight="700">Selector</text>
+        <text x="560" y="97" text-anchor="middle" fill="#b0b8c8" font-family="Inter,sans-serif" font-size="9">no hidden tests</text>
+        <!-- Final Patch -->
+        <rect x="670" y="55" width="120" height="56" rx="10" fill="#1f2330" stroke="#34d399" stroke-width="1.5"/>
+        <text x="730" y="80" text-anchor="middle" fill="#34d399" font-family="Inter,sans-serif" font-size="11" font-weight="700">Final Patch</text>
+        <text x="730" y="97" text-anchor="middle" fill="#b0b8c8" font-family="Inter,sans-serif" font-size="9">submitted</text>
+        <!-- Verifier -->
+        <rect x="830" y="55" width="100" height="56" rx="10" fill="#1f2330" stroke="#f87171" stroke-width="1.5"/>
+        <text x="880" y="80" text-anchor="middle" fill="#f87171" font-family="Inter,sans-serif" font-size="11" font-weight="700">Hidden</text>
+        <text x="880" y="97" text-anchor="middle" fill="#b0b8c8" font-family="Inter,sans-serif" font-size="9">verifier ✓/✗</text>
+      </g>
+      <!-- Arrows -->
+      <g stroke="#4a5270" stroke-width="1.5" fill="none" marker-end="url(#arrow)">
+        <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4a5270"/></marker></defs>
+        <line x1="130" y1="98" x2="173" y2="98"/>
+        <line x1="275" y1="85" x2="318" y2="38"/>
+        <line x1="275" y1="98" x2="318" y2="98"/>
+        <line x1="275" y1="111" x2="318" y2="158"/>
+        <line x1="450" y1="34" x2="498" y2="72"/>
+        <line x1="450" y1="98" x2="498" y2="86"/>
+        <line x1="450" y1="164" x2="498" y2="97"/>
+        <line x1="620" y1="83" x2="668" y2="83"/>
+        <line x1="790" y1="83" x2="828" y2="83"/>
+      </g>
+    </svg>
+  </div>
+  <p style="font-size:.78rem;color:var(--text-2);text-align:center">Solution architecture: budget is split across samples, verification, and refinement; a selector picks the final patch without seeing hidden tests.</p>
+</section>
+
+<!-- ═══════ §3  PLAN ═══════ -->
+<section id="plan" class="fade-in">
+  <div class="section-label">
+    <div class="icon">🗓</div>
+    <h2>2.5-Hour Execution Plan</h2>
+  </div>
+
+  <div class="card">
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-time">0:00 – 0:20</div>
+        <div class="tl-title">Pilot Run</div>
+        <div class="tl-desc">Install Pier + Docker/Modal. Run <strong>one task</strong> with a cheap model. Measure real cost per run and wall time. This sets the budget gates.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">0:20 – 0:40</div>
+        <div class="tl-title">Pool Launch</div>
+        <div class="tl-desc">Fix model, N=8, budget split from pilot. Launch all 80 runs (10 tasks × 8 samples) in background via Pier.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">0:40 – 1:40</div>
+        <div class="tl-title">Build Harness (while runs execute)</div>
+        <div class="tl-desc">Write <code>cost_logger.py</code>, <code>select.py</code> (consensus + judge selector), <code>refine.py</code> (feedback loop), <code>analyze.py</code> (CSV + Pareto).</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">1:40 – 2:15</div>
+        <div class="tl-title">Analysis &amp; Plotting</div>
+        <div class="tl-desc">Replay selection on pool for N=1,2,4,8. Run refinement arm. Build Pareto plot with bootstrap 95% CIs. Generate <code>results.csv</code> and <code>pareto.png</code>.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">2:15 – 2:50</div>
+        <div class="tl-title">Memo &amp; Submission</div>
+        <div class="tl-desc">Write 3-page memo, README, push repo, export trajectories, redact keys, email.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Budget Gates -->
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card">
+      <div class="card-title">💰 Gate 1: After Pilot <span class="tag tag-yellow">Spend Check</span></div>
+      <p style="font-size:.84rem;color:var(--text-1)">If one run costs <code>c</code>, full pass = <code>10c</code>, pool of 8 = <code>80c</code>. Pick model where <code>80c ≤ ~$60</code>.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🛡️ Gate 2: Reserve <span class="tag tag-red">Hard Cap</span></div>
+      <p style="font-size:.84rem;color:var(--text-1)">Keep ~$25 for verification calls, refinement, and infra reruns. <strong>Never spend the last $10.</strong></p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-title">🎯 Cost Trick <span class="tag tag-green">Key Insight</span></div>
+    <p style="font-size:.84rem;color:var(--text-1)">Run an 8-sample pool once, then <strong>simulate</strong> best-of-N for N=1…8 by resampling. One pool → many budget points → tight paired comparisons. Assumption: sandbox compute (Docker/Modal) ≠ inference spend.</p>
+  </div>
+</section>
+
+<!-- ═══════ §4  PIPELINE ═══════ -->
+<section id="pipeline" class="fade-in">
+  <div class="section-label">
+    <div class="icon">⚙️</div>
+    <h2>Experiment Pipeline Diagram</h2>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 860 310" xmlns="http://www.w3.org/2000/svg" style="max-width:840px">
+      <defs>
+        <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4a5270"/></marker>
+        <linearGradient id="gFlow" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#6c8cff"/>
+          <stop offset="100%" stop-color="#22d3ee"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Stage 1: Tasks -->
+      <rect x="10" y="120" width="110" height="70" rx="12" fill="#1a1d27" stroke="#6c8cff" stroke-width="2"/>
+      <text x="65" y="148" text-anchor="middle" fill="#6c8cff" font-family="Inter" font-size="12" font-weight="700">10 Tasks</text>
+      <text x="65" y="167" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">seed=0, fixed</text>
+
+      <!-- Stage 2: Pool -->
+      <rect x="165" y="100" width="130" height="110" rx="12" fill="#1a1d27" stroke="#a78bfa" stroke-width="2"/>
+      <text x="230" y="130" text-anchor="middle" fill="#a78bfa" font-family="Inter" font-size="12" font-weight="700">Pool Generation</text>
+      <text x="230" y="150" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">N=8 attempts / task</text>
+      <text x="230" y="165" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">80 total runs</text>
+      <text x="230" y="180" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">pier run ...</text>
+      <text x="230" y="200" text-anchor="middle" fill="#fbbf24" font-family="Inter" font-size="9" font-weight="600">~$60 budget</text>
+
+      <!-- Stage 3: Selector -->
+      <rect x="340" y="40" width="140" height="90" rx="12" fill="#1a1d27" stroke="#fbbf24" stroke-width="2"/>
+      <text x="410" y="65" text-anchor="middle" fill="#fbbf24" font-family="Inter" font-size="12" font-weight="700">Selector</text>
+      <text x="410" y="83" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">① Random (baseline)</text>
+      <text x="410" y="97" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">② Consensus (free)</text>
+      <text x="410" y="111" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">③ LLM Judge (~$)</text>
+
+      <!-- Stage 3b: Refiner -->
+      <rect x="340" y="175" width="140" height="80" rx="12" fill="#1a1d27" stroke="#22d3ee" stroke-width="2"/>
+      <text x="410" y="200" text-anchor="middle" fill="#22d3ee" font-family="Inter" font-size="12" font-weight="700">Refiner</text>
+      <text x="410" y="218" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">k=1,2,3 feedback</text>
+      <text x="410" y="232" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">loops per patch</text>
+
+      <!-- Stage 4: Evaluate -->
+      <rect x="530" y="100" width="130" height="110" rx="12" fill="#1a1d27" stroke="#34d399" stroke-width="2"/>
+      <text x="595" y="130" text-anchor="middle" fill="#34d399" font-family="Inter" font-size="12" font-weight="700">Evaluate</text>
+      <text x="595" y="150" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">Hidden verifier</text>
+      <text x="595" y="165" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">Binary reward</text>
+      <text x="595" y="180" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">Pass / Fail</text>
+      <text x="595" y="197" text-anchor="middle" fill="#f87171" font-family="Inter" font-size="9" font-weight="600">NOT for selection</text>
+
+      <!-- Stage 5: Analyze -->
+      <rect x="710" y="100" width="130" height="110" rx="12" fill="#1a1d27" stroke="#fb923c" stroke-width="2"/>
+      <text x="775" y="130" text-anchor="middle" fill="#fb923c" font-family="Inter" font-size="12" font-weight="700">Analyze</text>
+      <text x="775" y="150" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">Pareto plot</text>
+      <text x="775" y="165" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">Bootstrap CIs</text>
+      <text x="775" y="180" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">results.csv</text>
+      <text x="775" y="197" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">per_task.csv</text>
+
+      <!-- Arrows -->
+      <g stroke="#4a5270" stroke-width="1.5" fill="none" marker-end="url(#a2)">
+        <line x1="120" y1="155" x2="163" y2="155"/>
+        <line x1="295" y1="135" x2="338" y2="90"/>
+        <line x1="295" y1="175" x2="338" y2="205"/>
+        <line x1="480" y1="85" x2="528" y2="130"/>
+        <line x1="480" y1="215" x2="528" y2="175"/>
+        <line x1="660" y1="155" x2="708" y2="155"/>
+      </g>
+
+      <!-- Oracle line -->
+      <line x1="295" y1="150" x2="528" y2="150" stroke="#34d399" stroke-width="1" stroke-dasharray="5,4" opacity=".4"/>
+      <text x="412" y="148" text-anchor="middle" fill="#34d399" font-family="Inter" font-size="8" opacity=".7">oracle pass@N (upper bound)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ §5  ARMS ═══════ -->
+<section id="arms" class="fade-in">
+  <div class="section-label">
+    <div class="icon">🧪</div>
+    <h2>Experimental Arms</h2>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Arm</th><th>Strategy</th><th>Spend Shape</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="pill tag-blue">A</span></td>
+          <td>Single shot, cheap model</td>
+          <td class="mono">1 attempt</td>
+          <td>Baseline</td>
+        </tr>
+        <tr>
+          <td><span class="pill tag-purple">B</span></td>
+          <td>Single shot, strong model</td>
+          <td class="mono">1 attempt, $$</td>
+          <td>Pay-per-token vs pay-per-sample?</td>
+        </tr>
+        <tr>
+          <td><span class="pill tag-cyan">C</span></td>
+          <td>Best-of-N, N=2,4,8</td>
+          <td class="mono">N attempts + selection</td>
+          <td>Main hypothesis</td>
+        </tr>
+        <tr>
+          <td><span class="pill tag-green">D</span></td>
+          <td>Oracle pass@N</td>
+          <td class="mono">same as C, free select</td>
+          <td>Upper bound on selection</td>
+        </tr>
+        <tr>
+          <td><span class="pill tag-yellow">E</span></td>
+          <td>Refinement, k=1,2,3</td>
+          <td class="mono">1 attempt + k rounds</td>
+          <td>Iterative vs sampling</td>
+        </tr>
+        <tr>
+          <td><span class="pill tag-red">F</span></td>
+          <td>Hybrid: N=3 + refine best</td>
+          <td class="mono">mixed</td>
+          <td>Frontier candidate</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Illustrative Pareto Sketch -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-title">📈 Illustrative Pareto Shape <span class="tag tag-yellow">Sketch — not results</span></div>
+    <div class="diagram-wrap" style="margin:12px 0 0;border:none;padding:20px;background:var(--bg-1)">
+      <svg viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg" style="max-width:480px">
+        <!-- Axes -->
+        <line x1="60" y1="240" x2="470" y2="240" stroke="#3a4060" stroke-width="1.5"/>
+        <line x1="60" y1="240" x2="60" y2="20" stroke="#3a4060" stroke-width="1.5"/>
+        <text x="265" y="270" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="11">Inference Cost ($) →</text>
+        <text x="18" y="130" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="11" transform="rotate(-90 18 130)">Pass Rate →</text>
+        <!-- Grid -->
+        <g stroke="#262a36" stroke-width="0.5">
+          <line x1="60" y1="185" x2="470" y2="185"/><line x1="60" y1="130" x2="470" y2="130"/>
+          <line x1="60" y1="75" x2="470" y2="75"/><line x1="60" y1="20" x2="470" y2="20"/>
+        </g>
+        <!-- Axis ticks -->
+        <text x="56" y="244" text-anchor="end" fill="#6e7a90" font-family="Inter" font-size="9">0%</text>
+        <text x="56" y="189" text-anchor="end" fill="#6e7a90" font-family="Inter" font-size="9">25%</text>
+        <text x="56" y="134" text-anchor="end" fill="#6e7a90" font-family="Inter" font-size="9">50%</text>
+        <text x="56" y="79" text-anchor="end" fill="#6e7a90" font-family="Inter" font-size="9">75%</text>
+        <text x="56" y="24" text-anchor="end" fill="#6e7a90" font-family="Inter" font-size="9">100%</text>
+
+        <!-- Pareto frontier (illustrative) -->
+        <path d="M 90 200 Q 150 120, 240 90 Q 340 65, 440 55" stroke="#6c8cff" stroke-width="2" fill="none" stroke-dasharray="6,3" opacity=".6"/>
+        <text x="350" y="48" fill="#6c8cff" font-family="Inter" font-size="9" opacity=".7">frontier</text>
+
+        <!-- Data points (illustrative) -->
+        <circle cx="90" cy="200" r="6" fill="#6c8cff"/><text x="98" y="214" fill="#6c8cff" font-family="Inter" font-size="9" font-weight="600">A</text>
+        <circle cx="110" cy="165" r="6" fill="#a78bfa"/><text x="118" y="179" fill="#a78bfa" font-family="Inter" font-size="9" font-weight="600">B</text>
+        <circle cx="180" cy="120" r="6" fill="#22d3ee"/><text x="188" y="117" fill="#22d3ee" font-family="Inter" font-size="9" font-weight="600">C₂</text>
+        <circle cx="270" cy="85" r="6" fill="#22d3ee"/><text x="278" y="82" fill="#22d3ee" font-family="Inter" font-size="9" font-weight="600">C₄</text>
+        <circle cx="400" cy="60" r="6" fill="#22d3ee"/><text x="408" y="57" fill="#22d3ee" font-family="Inter" font-size="9" font-weight="600">C₈</text>
+        <!-- Oracle -->
+        <circle cx="270" cy="65" r="5" fill="none" stroke="#34d399" stroke-width="1.5"/><text x="280" y="62" fill="#34d399" font-family="Inter" font-size="8">D₄</text>
+        <circle cx="400" cy="40" r="5" fill="none" stroke="#34d399" stroke-width="1.5"/><text x="410" y="37" fill="#34d399" font-family="Inter" font-size="8">D₈</text>
+        <!-- Refine (dominated) -->
+        <circle cx="220" cy="140" r="5" fill="#fbbf24" opacity=".7"/><text x="228" y="150" fill="#fbbf24" font-family="Inter" font-size="9" font-weight="600">E</text>
+        <!-- Hybrid -->
+        <circle cx="310" cy="72" r="6" fill="#fb923c"/><text x="320" y="69" fill="#fb923c" font-family="Inter" font-size="9" font-weight="600">F</text>
+
+        <!-- Diminishing returns region -->
+        <rect x="350" y="10" width="120" height="50" rx="6" fill="rgba(248,113,113,.08)" stroke="rgba(248,113,113,.2)" stroke-width="1"/>
+        <text x="410" y="30" text-anchor="middle" fill="#f87171" font-family="Inter" font-size="8">diminishing</text>
+        <text x="410" y="42" text-anchor="middle" fill="#f87171" font-family="Inter" font-size="8">returns zone</text>
+      </svg>
+    </div>
+    <p style="font-size:.78rem;color:var(--text-2);margin-top:8px">⚠️ This is an illustrative sketch only. Replace with real data after experiments.</p>
+  </div>
+</section>
+
+<!-- ═══════ §6  ANTIGRAVITY WORKFLOW ═══════ -->
+<section id="antigravity" class="fade-in">
+  <div class="section-label">
+    <div class="icon">🚀</div>
+    <h2>Antigravity Workflow</h2>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 780 120" xmlns="http://www.w3.org/2000/svg" style="max-width:760px">
+      <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#4a5270"/></marker></defs>
+      <!-- Nodes -->
+      <g>
+        <rect x="5" y="30" width="120" height="60" rx="10" fill="#1a1d27" stroke="#6c8cff" stroke-width="2"/>
+        <text x="65" y="55" text-anchor="middle" fill="#6c8cff" font-family="Inter" font-size="11" font-weight="700">① Workspace</text>
+        <text x="65" y="72" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">git init, open IDE</text>
+
+        <rect x="165" y="30" width="120" height="60" rx="10" fill="#1a1d27" stroke="#a78bfa" stroke-width="2"/>
+        <text x="225" y="55" text-anchor="middle" fill="#a78bfa" font-family="Inter" font-size="11" font-weight="700">② Plan Mode</text>
+        <text x="225" y="72" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">paste master prompt</text>
+
+        <rect x="325" y="30" width="120" height="60" rx="10" fill="#1a1d27" stroke="#22d3ee" stroke-width="2"/>
+        <text x="385" y="55" text-anchor="middle" fill="#22d3ee" font-family="Inter" font-size="11" font-weight="700">③ Build</text>
+        <text x="385" y="72" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">harness, selectors</text>
+
+        <rect x="485" y="30" width="120" height="60" rx="10" fill="#1a1d27" stroke="#34d399" stroke-width="2"/>
+        <text x="545" y="55" text-anchor="middle" fill="#34d399" font-family="Inter" font-size="11" font-weight="700">④ Run</text>
+        <text x="545" y="72" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">pilot → pool via Pier</text>
+
+        <rect x="645" y="30" width="120" height="60" rx="10" fill="#1a1d27" stroke="#fbbf24" stroke-width="2"/>
+        <text x="705" y="55" text-anchor="middle" fill="#fbbf24" font-family="Inter" font-size="11" font-weight="700">⑤ Export</text>
+        <text x="705" y="72" text-anchor="middle" fill="#8090a8" font-family="Inter" font-size="9">trajectories + logs</text>
+      </g>
+      <!-- Arrows -->
+      <g stroke="#4a5270" stroke-width="1.5" fill="none" marker-end="url(#a3)">
+        <line x1="125" y1="60" x2="163" y2="60"/>
+        <line x1="285" y1="60" x2="323" y2="60"/>
+        <line x1="445" y1="60" x2="483" y2="60"/>
+        <line x1="605" y1="60" x2="643" y2="60"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">📝 Master Prompt to Paste</div>
+    <div class="code-block">You are helping me build a small, reproducible research experiment.
+Goal: test whether inference-time compute (best-of-N with an
+execution-based selector, and iterative refinement) improves
+pass rate on 10 DeepSWE tasks under a $100 API budget.
+
+Constraints: no training; same tasks and grader across arms;
+log tokens, USD cost, wall time, model calls per run.
+Tasks: pier run -p deep-swe/tasks --n-tasks 10 --sample-seed 0
+
+First: write a plan only (no code). Then wait for my approval.
+Build in this order: 1) cost_logger.py 2) run_pool.sh (N samples
+per task) 3) select.py (never reads hidden tests) 4) refine.py
+5) analyze.py (results.csv, pareto.png with bootstrap CIs).
+Keep changes minimal and targeted. Print cost after every run.
+Stop and ask if projected spend exceeds the current gate.</div>
+  </div>
+
+  <div class="grid-2" style="margin-top:12px">
+    <div class="card">
+      <div class="card-title">🎯 Why Plan First</div>
+      <p style="font-size:.84rem;color:var(--text-1)">The plan artifact is part of your <strong>trajectory evidence</strong>: it shows decisions before code. Graders can see your reasoning process.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📦 Trajectory Evidence</div>
+      <ul style="font-size:.84rem;color:var(--text-1);list-style:none">
+        <li>• <strong>Antigravity:</strong> conversation + plan/walkthrough artifacts</li>
+        <li>• <strong>Pier:</strong> trajectories + verifier outputs (strongest evidence)</li>
+        <li>• <span style="color:var(--accent-danger)">⚠️ Redact API keys before committing</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ §7  DOUBTS ═══════ -->
+<section id="doubts" class="fade-in">
+  <div class="section-label">
+    <div class="icon">❓</div>
+    <h2>Key Doubts &amp; Solutions</h2>
+  </div>
+
+  <details class="doubt" open>
+    <summary>🔐 Selection without hidden tests — what do I use?</summary>
+    <div class="answer">
+      <strong>Use agent-written tests per sample</strong>, cross-execution (run every patch against every sample's tests), and pick the patch with highest agreement. Also try an LLM judge as a weaker arm. Report <strong>selector accuracy separately</strong> from oracle pass@N so graders see both the ceiling and your selector's effectiveness.
+    </div>
+  </details>
+
+  <details class="doubt">
+    <summary>📊 Will 10 tasks give a real conclusion?</summary>
+    <div class="answer">
+      Not a strong one. One task = 10 percentage points, so 95% intervals will be wide. Use <strong>paired comparisons per task</strong> and <strong>bootstrap over tasks + samples</strong>. State plainly which differences are within noise. This is <em>directional</em> evidence, not a definitive result.
+    </div>
+  </details>
+
+  <details class="doubt">
+    <summary>💸 Are runs too expensive for $100?</summary>
+    <div class="answer">
+      Likely at frontier model prices. <strong>Pilot one task first</strong>, then choose a cheaper model for the pool. Cost and sample count are the variables you're studying — fewer tasks is acceptable, fewer arms is not.
+    </div>
+  </details>
+
+  <details class="doubt">
+    <summary>🔧 What if runs fail for infrastructure reasons?</summary>
+    <div class="answer">
+      Log them as <strong>infra failures</strong>, rerun once, count rerun cost. <strong>Do not silently drop tasks.</strong> Transparency here falls under the 10% intellectual honesty grade.
+    </div>
+  </details>
+
+  <details class="doubt">
+    <summary>🧪 Cheapest falsifier for the hypothesis?</summary>
+    <div class="answer">
+      Compute <strong>oracle pass@8 vs pass@1</strong> on the pool you already paid for. If they're roughly equal (tasks are either always-solved or never-solved), there's no diversity to exploit and best-of-N cannot help. <strong>Zero extra spend.</strong>
+    </div>
+  </details>
+
+  <details class="doubt">
+    <summary>⚠️ Biggest limitation?</summary>
+    <div class="answer">
+      <strong>Selector quality</strong> plus small sample size. Tested on a single model and one agent scaffold, so results may not transfer. With 2 more weeks: run all 113 tasks, cascades, early stopping, model mixing, learned selectors from trajectory features.
+    </div>
+  </details>
+</section>
+
+<!-- ═══════ §8  REPO LAYOUT ═══════ -->
+<section id="repo" class="fade-in">
+  <div class="section-label">
+    <div class="icon">📁</div>
+    <h2>Repository Layout</h2>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🗂️ Directory Structure</div>
+      <div class="tree">
+<span class="dir">inference-compute-deepswe/</span>
+├── <span class="file">README.md</span>              <span class="comment"># reproduce: commands, seeds</span>
+├── <span class="file">requirements.txt</span>
+├── <span class="dir">src/</span>
+│   ├── <span class="file">collect.py</span>         <span class="comment"># parse pier → pool.csv</span>
+│   ├── <span class="file">select_patch.py</span>    <span class="comment"># random, consensus, judge</span>
+│   ├── <span class="file">judge_pool.py</span>      <span class="comment"># LLM score all patches</span>
+│   ├── <span class="file">analyze.py</span>         <span class="comment"># Pareto, bootstrap CIs</span>
+│   └── <span class="file">run_pool.sh</span>        <span class="comment"># N samples via pier</span>
+├── <span class="dir">results/</span>
+│   ├── <span class="file">pool.csv</span>           <span class="comment"># per trial: cost, pass, latency</span>
+│   ├── <span class="file">summary.csv</span>        <span class="comment"># per arm aggregate</span>
+│   ├── <span class="file">per_task.csv</span>       <span class="comment"># per task × arm breakdown</span>
+│   ├── <span class="file">judge.csv</span>          <span class="comment"># LLM judge scores</span>
+│   └── <span class="file">pareto.png</span>         <span class="comment"># cost vs success plot</span>
+├── <span class="dir">memo/</span>
+│   └── <span class="file">memo.pdf</span>           <span class="comment"># 3-page research memo</span>
+├── <span class="dir">trajectories/</span>
+│   ├── <span class="dir">pier/</span>              <span class="comment"># exported run trajectories</span>
+│   └── <span class="dir">antigravity/</span>       <span class="comment"># plan, walkthrough, chat</span>
+├── <span class="dir">tests/</span>
+│   └── <span class="file">test_selectors.py</span>  <span class="comment"># unit tests</span>
+└── <span class="file">.gitignore</span>             <span class="comment"># keys, .env, __pycache__</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📄 Memo Outline (3 pages)</div>
+      <div style="font-size:.85rem;color:var(--text-1)">
+        <div style="margin-bottom:16px">
+          <div style="font-weight:700;color:var(--accent-primary);margin-bottom:4px">Page 1 — Setup</div>
+          <ul style="list-style:none;padding-left:8px">
+            <li>• Hypothesis</li>
+            <li>• Setup: models, tasks (seed 0), arms</li>
+            <li>• Budget, assumptions</li>
+          </ul>
+        </div>
+        <div style="margin-bottom:16px">
+          <div style="font-weight:700;color:var(--accent-secondary);margin-bottom:4px">Page 2 — Results</div>
+          <ul style="list-style:none;padding-left:8px">
+            <li>• Pareto plot + table</li>
+            <li>• Cost, latency, calls per arm</li>
+            <li>• Frontier, dominated arms</li>
+            <li>• Diminishing returns analysis</li>
+            <li>• Selector accuracy vs oracle</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-weight:700;color:var(--accent-cyan);margin-bottom:4px">Page 3 — Discussion</div>
+          <ul style="list-style:none;padding-left:8px">
+            <li>• Limitations</li>
+            <li>• Cheapest falsifier</li>
+            <li>• Two-week plan</li>
+            <li>• Budget recommendation + why</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ §9  SUBMISSION ═══════ -->
+<section id="submit" class="fade-in">
+  <div class="section-label">
+    <div class="icon">✅</div>
+    <h2>Submission Checklist</h2>
+  </div>
+
+  <div class="card">
+    <ul class="checklist" id="checklist">
+      <li><div class="check-box" onclick="toggleCheck(this)"></div>Pilot done; real cost per run known</li>
+      <li><div class="check-box" onclick="toggleCheck(this)"></div>Total measured spend under $100 (include reruns)</li>
+      <li><div class="check-box" onclick="toggleCheck(this)"></div><code>results.csv</code> has cost, latency, calls for every run</li>
+      <li><div class="check-box" onclick="toggleCheck(this)"></div>Pareto plot with error bars, dominated points marked</li>
+      <li><div class="check-box" onclick="toggleCheck(this)"></div>Memo within 3 pages, negative results stated</li>
+      <li><div class="check-box" onclick="toggleCheck(this)"></div>Keys redacted in every log and trajectory</li>
+      <li><div class="check-box" onclick="toggleCheck(this)"></div>Repo pushed; README reproduces from a clean clone</li>
+      <li><div class="check-box" onclick="toggleCheck(this)"></div>Read the email for exact submission format</li>
+      <li><div class="check-box" onclick="toggleCheck(this)"></div>Send repo link + PDF memo</li>
+    </ul>
+    <div style="margin-top:16px;padding:12px 16px;border-radius:var(--radius-sm);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2)">
+      <p style="font-size:.84rem;color:var(--accent-warn)">💡 <strong>Word doc:</strong> only needed if the email explicitly asks for one. A PDF memo in the repo + link in the email is usually sufficient.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ §10  SYNTHETIC RESULTS ═══════ -->
+<section id="synthetic" class="fade-in">
+  <div class="section-label">
+    <div class="icon">🔬</div>
+    <h2>Synthetic Test Results <span class="tag tag-yellow" style="font-size:.65rem;vertical-align:middle">ILLUSTRATIVE</span></h2>
+  </div>
+
+  <div class="card" style="border-left:3px solid var(--accent-warn)">
+    <p style="font-size:.84rem;color:var(--text-1);margin-bottom:16px">These are from the synthetic pipeline validation (no real API calls). They demonstrate the analysis pipeline works correctly. Replace with real data after running the experiment.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Arm</th><th>Strategy</th><th>Success Rate</th><th>vs Oracle</th><th>Selector Capture</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">single-shot</td><td>Baseline (N=1)</td><td class="mono">0.400</td><td>—</td><td>—</td></tr>
+          <tr><td class="mono">random@2</td><td>Random pick from 2</td><td class="mono">0.570</td><td class="mono">0.714</td><td style="color:var(--accent-danger)">-2%</td></tr>
+          <tr><td class="mono">random@4</td><td>Random pick from 4</td><td class="mono">0.576</td><td class="mono">0.783</td><td style="color:var(--accent-warn)">2%</td></tr>
+          <tr><td class="mono">random@8</td><td>Random pick from 8</td><td class="mono">0.580</td><td class="mono">0.800</td><td style="color:var(--accent-warn)">3%</td></tr>
+          <tr><td class="mono">consensus@2</td><td>Consensus from 2</td><td class="mono">0.578</td><td class="mono">0.714</td><td style="color:var(--accent-warn)">4%</td></tr>
+          <tr><td class="mono">consensus@4</td><td>Consensus from 4</td><td class="mono">0.745</td><td class="mono">0.783</td><td style="color:var(--accent-success)">82%</td></tr>
+          <tr><td class="mono">consensus@8</td><td>Consensus from 8</td><td class="mono">0.800</td><td class="mono">0.800</td><td style="color:var(--accent-success)">100%</td></tr>
+          <tr><td class="mono">judge@2</td><td>LLM judge from 2</td><td class="mono">0.674</td><td class="mono">0.714</td><td style="color:var(--accent-success)">72%</td></tr>
+          <tr><td class="mono">judge@4</td><td>LLM judge from 4</td><td class="mono">0.716</td><td class="mono">0.783</td><td style="color:var(--accent-success)">68%</td></tr>
+          <tr><td class="mono">judge@8</td><td>LLM judge from 8</td><td class="mono">0.700</td><td class="mono">0.800</td><td style="color:var(--accent-primary)">56%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap">
+      <div class="kpi" style="flex:1 1 120px">
+        <div class="kpi-value" style="color:var(--accent-primary);font-size:1.2rem">10</div>
+        <div class="kpi-label">Tasks</div>
+      </div>
+      <div class="kpi" style="flex:1 1 120px">
+        <div class="kpi-value" style="color:var(--accent-secondary);font-size:1.2rem">8.0</div>
+        <div class="kpi-label">Attempts/Task</div>
+      </div>
+      <div class="kpi" style="flex:1 1 120px">
+        <div class="kpi-value" style="color:var(--accent-warn);font-size:1.2rem">6</div>
+        <div class="kpi-label">Mixed Tasks</div>
+      </div>
+      <div class="kpi" style="flex:1 1 120px">
+        <div class="kpi-value" style="color:var(--accent-success);font-size:1.2rem">$197*</div>
+        <div class="kpi-label">Synth Spend</div>
+      </div>
+    </div>
+    <p style="font-size:.72rem;color:var(--text-2);margin-top:8px">* Synthetic cost is illustrative and inflated. Real experiment should stay under $100.</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ─── FOOTER ──────────────────────────── -->
+<footer>
+  <div class="container">
+    <p>Inference-Time Compute Dashboard · Research Engineer Assignment · Built with Antigravity</p>
+  </div>
+</footer>
+
+<!-- ─── SCRIPTS ──────────────────────────── -->
+<script>
+  // Toggle checklist
+  function toggleCheck(el) {
+    el.classList.toggle('checked');
+    el.parentElement.classList.toggle('done');
+    saveChecklist();
+  }
+
+  function saveChecklist() {
+    const states = [...document.querySelectorAll('.check-box')].map(el => el.classList.contains('checked'));
+    localStorage.setItem('itc-checklist', JSON.stringify(states));
+  }
+
+  function loadChecklist() {
+    try {
+      const states = JSON.parse(localStorage.getItem('itc-checklist'));
+      if (states) {
+        document.querySelectorAll('.check-box').forEach((el, i) => {
+          if (states[i]) { el.classList.add('checked'); el.parentElement.classList.add('done'); }
+        });
+      }
+    } catch(e) {}
+  }
+  loadChecklist();
+
+  // Active nav link
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.nav-links a[href="#${entry.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+  sections.forEach(s => observer.observe(s));
+
+  // Fade-in on scroll
+  const fadeObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-in').forEach(el => fadeObs.observe(el));
+</script>
+</body>
+</html>
