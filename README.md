@@ -2,8 +2,7 @@
 
 > **Research Question:** Can spending more inference compute (Best-of-N sampling, patch selection, and iterative refinement) raise a coding agent's pass rate without fine-tuning or training?
 >
-> 🌐 **Live Interactive Dashboard:** [https://raghavendrak04.github.io/deepswe-cost-performance-analysis/](https://raghavendrak04.github.io/deepswe-cost-performance-analysis/)
-
+> 
 ---
 
 ## 1. System Architecture & User Flow
