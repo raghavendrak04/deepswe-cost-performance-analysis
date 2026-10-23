@@ -1,6 +1,8 @@
 # Inference-Time Compute Allocation for Coding Agents
 
 > **Research Question:** Can spending more inference compute (Best-of-N sampling, patch selection, and iterative refinement) raise a coding agent's pass rate without fine-tuning or training?
+>
+> 🌐 **Live Interactive Dashboard:** [https://raghavendrak04.github.io/deepswe-cost-performance-analysis/](https://raghavendrak04.github.io/deepswe-cost-performance-analysis/)
 
 ---
 
@@ -46,6 +48,7 @@
 |  - results_synth/*.csv       (Per-Task & Aggregated Metrics)                            |
 |  - memo/research_memo.md     (3-Page Executive Research Memo)                           |
 |  - trajectories/             (Sanitized Session Logs & Traces)                          |
+|  - index.html (GitHub Pages) (Live Interactive Dashboard)                              |
 +-----------------------------------------------------------------------------------------+
 ```
 
@@ -60,6 +63,8 @@
 | **3** | **Pareto Frontier Plot** | [results_synth/pareto.png](file:///c:/Users/kurap/Desktop/code/test0/results_synth/pareto.png) | Empirically derived Cost vs Task Success curve mapping frontier winners and dominated arms | ✅ Complete |
 | **4** | **Research Memo** | [memo/research_memo.md](file:///c:/Users/kurap/Desktop/code/test0/memo/research_memo.md) | $\le 3$-page paper: Hypothesis, 5-step thought process, 6 empirical proofs, failure modes, cheapest falsifier ($0), and 2-week plan | ✅ Complete |
 | **5** | **Agent Trajectories** | [trajectories/](file:///c:/Users/kurap/Desktop/code/test0/trajectories) | Fully sanitized transcripts (Single-shot, Refinement $k=2$, Consensus $N=8$, LLM Judge $N=4$, and session audit log) | ✅ Complete |
+| **+** | **Live Web Dashboard** | [index.html](https://raghavendrak04.github.io/deepswe-cost-performance-analysis/) | Deployed GitHub Pages interactive visualizer with dynamic Pareto curve and budget simulator | 🚀 [Live on Pages](https://raghavendrak04.github.io/deepswe-cost-performance-analysis/) |
+
 
 ---
 
