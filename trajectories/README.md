@@ -1,39 +1,33 @@
 # Agent Trajectories (Deliverable 5)
 
-> **Overview:** Exported session logs and trajectory traces demonstrating prompt flow, tool calls, patch generation, error feedback, and selection decisions across inference strategies.
+Exported trajectory artifacts showing prompts, tool use, candidate patches, and decision points across strategy arms.
 
----
+## Trajectory Manifest
 
-## 1. Trajectory Manifest
-
-| File | Strategy | Task ID | Key Decision Points Captured | Status |
+| File | Strategy | Task ID | Key Decision Points | Status |
 |---|---|---|---|---|
-| [task_01_single_shot.json](file:///c:/Users/kurap/Desktop/code/test0/trajectories/task_01_single_shot.json) | Baseline Single-Shot | `task-01` | Initial context intake, prompt construction, single patch output | ✅ Redacted & Sanitized |
-| [task_03_refinement_k2.json](file:///c:/Users/kurap/Desktop/code/test0/trajectories/task_03_refinement_k2.json) | Iterative Refinement ($k=2$) | `task-03` | Verifier failure feedback, error parsing, patch self-correction | ✅ Redacted & Sanitized |
-| [task_05_consensus_selection.json](file:///c:/Users/kurap/Desktop/code/test0/trajectories/task_05_consensus_selection.json) | Consensus@N ($N=8$) | `task-05` | 8 parallel candidate generations, Jaccard AST matrix, medoid vote | ✅ Redacted & Sanitized |
-| [task_08_llm_judge.json](file:///c:/Users/kurap/Desktop/code/test0/trajectories/task_08_llm_judge.json) | LLM Judge ($N=4$) | `task-08` | Rubric scoring, criteria weighting, candidate rank ordering | ✅ Redacted & Sanitized |
-| [agent_session_transcript.md](file:///c:/Users/kurap/Desktop/code/test0/trajectories/agent_session_transcript.md) | Full Agent Session | Multi-task | End-to-end orchestration transcript with tool calls and timings | ✅ Redacted & Sanitized |
+| [`task_01_single_shot.json`](./task_01_single_shot.json) | Baseline single-shot | `task-01` | Initial context, prompt, first patch output | ✅ Redacted |
+| [`task_03_refinement_k2.json`](./task_03_refinement_k2.json) | Iterative refinement (`k=2`) | `task-03` | Failure feedback parsing and correction loop | ✅ Redacted |
+| [`task_05_consensus_selection.json`](./task_05_consensus_selection.json) | Consensus@8 | `task-05` | 8 candidates, overlap scoring, medoid pick | ✅ Redacted |
+| [`task_08_llm_judge.json`](./task_08_llm_judge.json) | LLM judge@4 | `task-08` | Rubric scoring and ranking | ✅ Redacted |
+| [`agent_session_transcript.md`](./agent_session_transcript.md) | Full session log | multi-task | End-to-end orchestration and tool timeline | ✅ Redacted |
 
----
+## Redaction Policy
 
-## 2. Redaction & Privacy Specifications
-
-| Item | Redaction Policy | Substitution Pattern |
+| Item | Policy | Replacement |
 |---|---|---|
-| **API Keys** | Fully stripped | `[REDACTED_API_KEY]` |
-| **Auth Tokens** | Fully stripped | `[REDACTED_BEARER_TOKEN]` |
-| **Absolute Local Paths** | Generalized to workspace root | `/workspace/<path>` |
-| **System Identity** | Sanitized | `agent-runner-worker-<id>` |
+| API keys | removed | `[REDACTED_API_KEY]` |
+| Auth tokens | removed | `[REDACTED_BEARER_TOKEN]` |
+| Absolute paths | normalized | `/workspace/<path>` |
+| Host identity | sanitized | `agent-runner-worker-<id>` |
 
----
+## Data Schema
 
-## 3. Trajectory Data Schema
-
-| Field | Type | Description |
+| Field | Type | Meaning |
 |---|---|---|
-| `task_id` | String | Target benchmark task identifier |
-| `strategy` | String | Inference compute allocation arm |
-| `turns` | Array | Sequential interaction steps (prompt, thought, tool_call, tool_output) |
-| `metrics` | Object | Token usage, cost (USD), latency (ms), model calls |
-| `final_patch` | String | Git unified diff produced by the trajectory |
-| `verification` | Object | Hidden test outcome, exit code, test stdout summary |
+| `task_id` | string | benchmark task identifier |
+| `strategy` | string | inference strategy arm |
+| `turns` | array | ordered prompt/tool/action trace |
+| `metrics` | object | tokens, cost, latency, model calls |
+| `final_patch` | string | produced unified diff |
+| `verification` | object | verifier outcome summary |
